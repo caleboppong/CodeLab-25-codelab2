@@ -7,4 +7,4 @@ Moby-Dick,Herman Melville,635,006,false
 War and Peace,Leo Tolstoy,1225,007,true
 The Hobbit,J.R.R. Tolkien,310,008,false
 Crime and Punishment,Fyodor Dostoevsky,671,009,true
-Brave New World,Aldous Huxley,268,010,false
+Brave New World,Aldous Huxley,268,010,true
