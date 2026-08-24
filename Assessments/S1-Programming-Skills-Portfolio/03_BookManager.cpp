@@ -3,15 +3,14 @@
 #include <sstream>
 #include <vector>
 #include <string>
+
 using namespace std;
 
 class Book
 {
 private:
-    string title;
-    string author;
+    string title, author, id;
     int pages;
-    string id;
     bool borrowed;
 
 public:
@@ -34,37 +33,30 @@ public:
         return borrowed;
     }
 
-    void borrowBook()
+    void setBorrowed(bool status)
     {
-        borrowed = true;
+        borrowed = status;
     }
 
-    void returnBook()
+    void display()
     {
-        borrowed = false;
-    }
-
-    void displayBook()
-    {
-        cout << "\nTitle: " << title << endl;
-        cout << "Author: " << author << endl;
-        cout << "Pages: " << pages << endl;
-        cout << "ID: " << id << endl;
+        cout << "\nTitle: " << title;
+        cout << "\nAuthor: " << author;
+        cout << "\nPages: " << pages;
+        cout << "\nID: " << id;
 
         if (borrowed)
-            cout << "Status: Borrowed\n";
+            cout << "\nStatus: Borrowed\n";
         else
-            cout << "Status: Available\n";
+            cout << "\nStatus: Available\n";
     }
 
-    string getFileData()
+    string toFile()
     {
-        string status;
+        string status = "false";
 
         if (borrowed)
             status = "true";
-        else
-            status = "false";
 
         return title + "," + author + "," +
                to_string(pages) + "," + id + "," + status;
@@ -94,17 +86,15 @@ vector<Book> loadBooks()
         getline(data, id, ',');
         getline(data, status);
 
-        int pages = stoi(pagesText);
         bool borrowed = false;
 
         if (status == "true")
             borrowed = true;
 
-        Book newBook(title, author, pages, id, borrowed);
-        books.push_back(newBook);
+        Book book(title, author, stoi(pagesText), id, borrowed);
+        books.push_back(book);
     }
 
-    file.close();
     return books;
 }
 
@@ -113,19 +103,13 @@ void saveBooks(vector<Book> books)
     ofstream file("bookData.txt");
 
     for (int i = 0; i < books.size(); i++)
-    {
-        file << books[i].getFileData() << endl;
-    }
-
-    file.close();
+        file << books[i].toFile() << endl;
 }
 
-void showAllBooks(vector<Book> books)
+void showBooks(vector<Book> books)
 {
     for (int i = 0; i < books.size(); i++)
-    {
-        books[i].displayBook();
-    }
+        books[i].display();
 }
 
 int findBook(vector<Book> books, string id)
@@ -142,13 +126,14 @@ int findBook(vector<Book> books, string id)
 int main()
 {
     vector<Book> books = loadBooks();
-    int choice = 0;
 
     if (books.empty())
     {
         cout << "No books were loaded.\n";
         return 1;
     }
+
+    int choice = 0;
 
     while (choice != 5)
     {
@@ -163,7 +148,7 @@ int main()
 
         if (choice == 1)
         {
-            showAllBooks(books);
+            showBooks(books);
         }
         else if (choice >= 2 && choice <= 4)
         {
@@ -179,7 +164,7 @@ int main()
             }
             else if (choice == 2)
             {
-                books[position].displayBook();
+                books[position].display();
             }
             else if (choice == 3)
             {
@@ -189,12 +174,12 @@ int main()
                 }
                 else
                 {
-                    books[position].borrowBook();
+                    books[position].setBorrowed(true);
                     saveBooks(books);
                     cout << "Book borrowed successfully.\n";
                 }
             }
-            else if (choice == 4)
+            else
             {
                 if (!books[position].isBorrowed())
                 {
@@ -202,7 +187,7 @@ int main()
                 }
                 else
                 {
-                    books[position].returnBook();
+                    books[position].setBorrowed(false);
                     saveBooks(books);
                     cout << "Book returned successfully.\n";
                 }
@@ -215,6 +200,5 @@ int main()
     }
 
     cout << "Book Manager closed.\n";
-
     return 0;
 }
