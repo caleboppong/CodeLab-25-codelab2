@@ -3,7 +3,6 @@
 #include <sstream>
 #include <vector>
 #include <string>
-
 using namespace std;
 
 class Book
@@ -12,7 +11,6 @@ private:
     string title, author, id;
     int pages;
     bool borrowed;
-
 public:
     Book(string t, string a, int p, string i, bool b)
     {
@@ -22,17 +20,14 @@ public:
         id = i;
         borrowed = b;
     }
-
     string getId()
     {
         return id;
     }
-
     bool isBorrowed()
     {
         return borrowed;
     }
-
     void setBorrowed(bool status)
     {
         borrowed = status;
@@ -119,7 +114,6 @@ int findBook(vector<Book> books, string id)
         if (books[i].getId() == id)
             return i;
     }
-
     return -1;
 }
 
