@@ -1,11 +1,13 @@
 #include "ofApp.h"
 
+// Initialise the GlobeLens window, fonts, data services and interactive map.
 void ofApp::setup() {
 	ofSetWindowTitle("GlobeLens 3.2");
 	ofSetWindowShape(1440, 900);
 	ofSetFrameRate(60);
 	ofEnableAntiAliasing();
 
+	// Use Windows Segoe UI fonts to keep the dashboard typography consistent.
 	const string regular = "C:/Windows/Fonts/segoeui.ttf";
 	const string bold = "C:/Windows/Fonts/segoeuib.ttf";
 
@@ -16,17 +18,20 @@ void ofApp::setup() {
 	smallFont.load(regular, 13, true, true);
 	tinyFont.load(regular, 11, true, true);
 
+	// Initialise the API service and load locally saved favourites.
 	api.setup();
 	favorites.setup("favorites.json");
 
 	updateLayout();
 
+	// Load GeoJSON boundaries used by the interactive world map.
 	worldMap.setBounds(mapBounds);
 	worldMap.setup("maps/countries.geojson");
 
 	statusMessage = "Search for a country, or click a country on the map.";
 }
 
+// Recalculate interface positions and sizes so the layout responds to window size changes.
 void ofApp::updateLayout() {
 	const float w = (float)ofGetWidth();
 	const float h = (float)ofGetHeight();
@@ -93,6 +98,7 @@ void ofApp::updateLayout() {
 	const float lowerY = 510.0f;
 	const float availableLowerW = contentW;
 
+	// Switch to a stacked map/details layout when horizontal space becomes limited.
 	const bool stacked = availableLowerW < 760.0f;
 
 	if (!stacked) {
@@ -141,15 +147,18 @@ void ofApp::updateLayout() {
 	worldMap.setBounds(mapBounds);
 }
 
+// Rebuild the responsive layout whenever the application window is resized.
 void ofApp::windowResized(int w, int h) {
 	updateLayout();
 }
 
+// Update responsive positions and the map hover state once per frame.
 void ofApp::update() {
 	updateLayout();
 	worldMap.update(ofGetMouseX(), ofGetMouseY());
 }
 
+// Draw the shared navigation and then render the currently selected page.
 void ofApp::draw() {
 	ofBackground(14, 20, 30);
 
@@ -166,6 +175,7 @@ void ofApp::draw() {
 		drawInsights();
 }
 
+// Draw the permanent left navigation used to move between GlobeLens pages.
 void ofApp::drawSidebar() {
 	ofSetColor(19, 27, 39);
 	ofDrawRectangle(0, 0, sidebarWidth, ofGetHeight());
@@ -195,6 +205,7 @@ void ofApp::drawSidebar() {
 	tinyFont.drawString("Responsive country intelligence", 24, ofGetHeight() - 38);
 }
 
+// Draw one sidebar navigation button with selected and hover feedback.
 void ofApp::drawNavButton(
 	const ofRectangle & rect,
 	const string & title,
@@ -221,6 +232,7 @@ void ofApp::drawNavButton(
 	bodyFont.drawString(title, rect.x + 25, rect.y + 33);
 }
 
+// Draw the search field, animated text cursor, search button and status feedback.
 void ofApp::drawTopBar() {
 	ofSetColor(17, 23, 34);
 	ofDrawRectangle(
@@ -307,6 +319,7 @@ void ofApp::drawTopBar() {
 		101);
 }
 
+// Validate the search, resolve common aliases, request API data and update the current country.
 void ofApp::performSearch(const string & countryName) {
 	if (searching) return;
 
@@ -333,6 +346,7 @@ void ofApp::performSearch(const string & countryName) {
 		statusMessage = "Loading country data...";
 	}
 
+	// Store the API result separately so a failed search does not replace valid data already on screen.
 	CountryData result;
 	string error;
 
@@ -384,6 +398,7 @@ void ofApp::performSearch(const string & countryName) {
 			recentSearches.begin());
 	}
 
+	// Centre and scale the map around the newly loaded country.
 	worldMap.focusCountry(
 		currentCountry.alpha3);
 
@@ -392,6 +407,7 @@ void ofApp::performSearch(const string & countryName) {
 	currentPage = PAGE_EXPLORE;
 }
 
+// Remove unnecessary whitespace and collapse repeated spaces before sending a search.
 string ofApp::trimSearchText(
 	const string & text) const {
 
@@ -432,6 +448,7 @@ string ofApp::trimSearchText(
 	return collapsed;
 }
 
+// Convert common country abbreviations into names that the API can search reliably.
 string ofApp::resolveCountryAlias(
 	const string & text) const {
 
@@ -466,6 +483,7 @@ string ofApp::resolveCountryAlias(
 	return trimSearchText(text);
 }
 
+// Download the selected country flag using its two-letter country code.
 void ofApp::loadFlag(const CountryData & country) {
 	currentFlag.clear();
 	flagLoaded = false;
@@ -492,6 +510,7 @@ void ofApp::loadFlag(const CountryData & country) {
 	}
 }
 
+// Draw the Explore page, including the country profile, metrics, map and details.
 void ofApp::drawExplore() {
 	if (!currentCountry.valid) {
 		ofSetColor(245, 248, 255);
@@ -566,6 +585,7 @@ void ofApp::drawExplore() {
 	drawRecentSearches();
 }
 
+// Draw the main country profile card and its Compare and Save actions.
 void ofApp::drawCountryHero() {
 	float x = heroRect.x;
 	float y = heroRect.y;
@@ -693,6 +713,7 @@ void ofApp::drawCountryHero() {
 		favoriteButton.y + 27);
 }
 
+// Display the four headline statistics for the selected country.
 void ofApp::drawMetricCards() {
 	const float y = 365.0f;
 	const float h = 105.0f;
@@ -743,6 +764,7 @@ void ofApp::drawMetricCards() {
 			+ " / km2");
 }
 
+// Draw a reusable statistic card and shorten values that are too wide to fit.
 void ofApp::drawMetricCard(
 	float x,
 	float y,
@@ -792,6 +814,7 @@ void ofApp::drawMetricCard(
 		y + 70);
 }
 
+// Draw additional country information in a compact key/value list.
 void ofApp::drawDetailsCard() {
 	const float x = detailsRect.x;
 	const float y = detailsRect.y;
@@ -868,6 +891,7 @@ void ofApp::drawDetailsCard() {
 	}
 }
 
+// Draw recent-search chips so previously viewed countries can be reopened quickly.
 void ofApp::drawRecentSearches() {
 	recentButtons.clear();
 
@@ -922,6 +946,7 @@ void ofApp::drawRecentSearches() {
 	}
 }
 
+// Draw one side of the country comparison using the same reusable card layout.
 void ofApp::drawCompareCountryCard(
 	const CountryData & c,
 	float x,
@@ -1013,6 +1038,7 @@ void ofApp::drawCompareCountryCard(
 	}
 }
 
+// Draw two selected countries and calculate simple comparison insights.
 void ofApp::drawCompare() {
 	ofSetColor(245, 248, 255);
 
@@ -1146,6 +1172,7 @@ void ofApp::drawCompare() {
 	}
 }
 
+// Draw countries saved locally and provide controls to open or remove each one.
 void ofApp::drawFavorites() {
 	favoriteCards.clear();
 	favoriteRemoveButtons.clear();
@@ -1294,6 +1321,7 @@ void ofApp::drawFavorites() {
 	}
 }
 
+// Visualise population or population density for saved/current countries using proportional bars.
 void ofApp::drawInsights() {
 	ofSetColor(245, 248, 255);
 
@@ -1366,6 +1394,7 @@ void ofApp::drawInsights() {
 		"Density",
 		insightMetric == 1);
 
+	// Start with saved countries, then include the currently open country if it is not already present.
 	vector<CountryData> items = favorites.getAll();
 
 	if (currentCountry.valid) {
@@ -1414,6 +1443,7 @@ void ofApp::drawInsights() {
 		return;
 	}
 
+	// Find the largest value so every chart bar can be scaled proportionally.
 	double maxValue = 1.0;
 
 	for (const auto & c : items) {
@@ -1530,6 +1560,7 @@ void ofApp::drawInsights() {
 	}
 }
 
+// Format large whole numbers with comma separators for readability.
 string ofApp::formatNumber(
 	long long value) const {
 
@@ -1557,6 +1588,7 @@ string ofApp::formatNumber(
 	return result;
 }
 
+// Convert large values to compact K, M or B labels for cards and charts.
 string ofApp::shortNumber(
 	long long value) const {
 
@@ -1584,6 +1616,7 @@ string ofApp::shortNumber(
 	return ofToString(value);
 }
 
+// Format a decimal value using the requested number of decimal places.
 string ofApp::formatDouble(
 	double value,
 	int decimals) const {
@@ -1593,6 +1626,7 @@ string ofApp::formatDouble(
 		decimals);
 }
 
+// Check whether a mouse position is inside the current map panel.
 bool ofApp::isInsideMap(
 	int x,
 	int y) const {
@@ -1602,6 +1636,7 @@ bool ofApp::isInsideMap(
 		y);
 }
 
+// Handle typing, Enter, Backspace and Escape while the search box has focus.
 void ofApp::keyPressed(int key) {
 	if (!searchFocused) return;
 
@@ -1631,14 +1666,17 @@ void ofApp::keyPressed(int key) {
 	}
 }
 
+// Required openFrameworks keyboard callback; no release behaviour is needed here.
 void ofApp::keyReleased(int key) {
 }
 
+// Route mouse clicks to navigation, search, compare, favorites, insights and map controls.
 void ofApp::mousePressed(
 	int x,
 	int y,
 	int button) {
 
+	// Sidebar navigation is checked first so page changes respond immediately.
 	if (navExplore.inside(x, y)) {
 		currentPage = PAGE_EXPLORE;
 		return;
@@ -1848,6 +1886,7 @@ void ofApp::mousePressed(
 	searchFocused = false;
 }
 
+// Pass drag movement to the map so the user can pan it.
 void ofApp::mouseDragged(
 	int x,
 	int y,
@@ -1862,6 +1901,7 @@ void ofApp::mouseDragged(
 	}
 }
 
+// End any active map dragging when the mouse button is released.
 void ofApp::mouseReleased(
 	int x,
 	int y,
@@ -1873,6 +1913,7 @@ void ofApp::mouseReleased(
 		button);
 }
 
+// Pass the mouse wheel to the map to control zoom on the Explore page.
 void ofApp::mouseScrolled(
 	ofMouseEventArgs & args) {
 

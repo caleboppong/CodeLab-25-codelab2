@@ -2,42 +2,61 @@
 
 #include "ofMain.h"
 
+// Stores all information about a single country.
+// The same structure is used for API results, comparisons,
+// favorites, map information and insights.
 struct CountryData {
-    string commonName;
-    string officialName;
-    string alpha2;
-    string alpha3;
 
-    string capital;
-    string region;
-    string subregion;
+	// Country names and ISO identification codes.
+	string commonName;
+	string officialName;
+	string alpha2;
+	string alpha3;
 
-    string currencyName;
-    string currencyCode;
-    string currencySymbol;
+	// Geographical information.
+	string capital;
+	string region;
+	string subregion;
 
-    vector<string> languages;
-    vector<string> borders;
-    vector<string> timezones;
-    vector<string> callingCodes;
+	// Currency information.
+	string currencyName;
+	string currencyCode;
+	string currencySymbol;
 
-    long long population = 0;
-    double areaKm2 = 0.0;
-    double latitude = 0.0;
-    double longitude = 0.0;
-    bool landlocked = false;
+	// Country information that can contain multiple values.
+	vector<string> languages;
+	vector<string> borders;
+	vector<string> timezones;
+	vector<string> callingCodes;
 
-    bool valid = false;
+	// Numerical and geographical values.
+	long long population = 0;
+	double areaKm2 = 0.0;
+	double latitude = 0.0;
+	double longitude = 0.0;
 
-    void clear();
+	// Indicates whether the country has no coastline.
+	bool landlocked = false;
 
-    string displayLanguages(int maxItems = 3) const;
-    string displayTimezones(int maxItems = 2) const;
-    string displayBorders(int maxItems = 5) const;
-    string displayCallingCodes() const;
+	// Shows whether this object contains successfully loaded country data.
+	bool valid = false;
 
-    double populationDensity() const;
+	// Reset all stored information back to its default values.
+	void clear();
 
-    ofJson toJson() const;
-    static CountryData fromJson(const ofJson& j);
+	// Create shorter readable versions of list-based information
+	// so large amounts of data do not overcrowd the interface.
+	string displayLanguages(int maxItems = 3) const;
+	string displayTimezones(int maxItems = 2) const;
+	string displayBorders(int maxItems = 5) const;
+	string displayCallingCodes() const;
+
+	// Calculate population per square kilometre.
+	double populationDensity() const;
+
+	// Convert the object to JSON for local storage.
+	ofJson toJson() const;
+
+	// Rebuild a CountryData object from saved JSON.
+	static CountryData fromJson(const ofJson & j);
 };

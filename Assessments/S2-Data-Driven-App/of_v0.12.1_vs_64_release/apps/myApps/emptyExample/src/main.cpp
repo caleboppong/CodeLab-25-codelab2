@@ -1,13 +1,18 @@
-#include "ofMain.h"
 #include "ofApp.h"
+#include "ofMain.h"
 
 int main() {
-    ofGLFWWindowSettings settings;
+	// Configure the main GlobeLens application window.
+	ofGLFWWindowSettings settings;
 
-    settings.setSize(1440, 900);
-    settings.resizable = true;
+	// Set the starting window size and allow the user to resize it.
+	settings.setSize(1440, 900);
+	settings.resizable = true;
 
-    auto window = ofCreateWindow(settings);
-    ofRunApp(window, make_shared<ofApp>());
-    ofRunMainLoop();
+	// Create the window and start the GlobeLens application.
+	auto window = ofCreateWindow(settings);
+	ofRunApp(window, make_shared<ofApp>());
+
+	// Keep the application running until the window is closed.
+	ofRunMainLoop();
 }
