@@ -1,0 +1,16 @@
+# GlobeLens secrets
+bin/data/config/globelens.json
+
+# Local user data
+bin/data/favorites.json
+
+# Visual Studio generated files
+.vs/
+**/obj/
+**/x64/
+**/Debug/
+**/Release/
+*.user
+
+# Temporary files
+enc_temp_folder/
