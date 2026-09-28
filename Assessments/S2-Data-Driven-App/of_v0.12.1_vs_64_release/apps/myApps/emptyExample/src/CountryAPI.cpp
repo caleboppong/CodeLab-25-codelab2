@@ -177,6 +177,70 @@ bool CountryAPI::searchExact(
 
 // Convert a country JSON record returned by the API into the
 // CountryData structure used throughout GlobeLens.
+// Search REST Countries using a stable ISO alpha-3 country code.
+bool CountryAPI::searchByAlpha3(
+	const string & alpha3,
+	CountryData & result,
+	string & errorMessage) {
+
+	result.clear();
+	errorMessage.clear();
+	lastRawResponse.clear();
+
+	if (alpha3.empty()) {
+		errorMessage = "Country code is missing.";
+		return false;
+	}
+
+	if (apiKey.empty() || apiKey == "PASTE_YOUR_NEW_API_KEY_HERE") {
+		errorMessage = "Add your API key to bin/data/config/globelens.json.";
+		return false;
+	}
+
+	const string url = "https://api.restcountries.com/countries/v5/codes.alpha_3/"
+		+ urlEncode(alpha3);
+
+	try {
+		ofHttpRequest request;
+		request.url = url;
+		request.name = "GlobeLensCountryCodeLookup";
+		request.method = ofHttpRequest::GET;
+		request.timeoutSeconds = 15;
+		request.headers["Authorization"] = "Bearer " + apiKey;
+		request.headers["Accept"] = "application/json";
+
+		ofURLFileLoader loader;
+		ofHttpResponse response = loader.handleRequest(request);
+		lastRawResponse = response.data.getText();
+
+		ofLogNotice("CountryAPI") << "HTTP status: " << response.status;
+
+		if (response.status < 200 || response.status >= 300) {
+			if (response.status == 401) errorMessage = "Invalid REST Countries API key.";
+			else if (response.status == 403) errorMessage = "REST Countries denied this API key.";
+			else if (response.status == 404) errorMessage = "Country not found.";
+			else if (response.status == 429) errorMessage = "API rate limit reached. Try again shortly.";
+			else if (response.status == -1) errorMessage = "Could not connect to REST Countries.";
+			else errorMessage = "REST Countries error. HTTP " + ofToString(response.status);
+			return false;
+		}
+
+		ofJson json = ofJson::parse(lastRawResponse);
+		if (!json.contains("data") || !json["data"].is_object()
+			|| !json["data"].contains("objects") || !json["data"]["objects"].is_array()
+			|| json["data"]["objects"].empty()) {
+			errorMessage = "REST Countries returned no country record.";
+			return false;
+		}
+
+		return parseCountryObject(json["data"]["objects"][0], result, errorMessage);
+	} catch (const std::exception & e) {
+		ofLogError("CountryAPI") << e.what();
+		errorMessage = "Could not read the country service response.";
+		return false;
+	}
+}
+
 bool CountryAPI::parseCountryObject(
 	const ofJson & country,
 	CountryData & result,

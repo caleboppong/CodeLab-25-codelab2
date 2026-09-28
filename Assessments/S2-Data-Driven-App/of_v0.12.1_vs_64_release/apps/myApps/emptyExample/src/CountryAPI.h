@@ -20,6 +20,13 @@ public:
 		CountryData & result,
 		string & errorMessage);
 
+	// Search the API by ISO alpha-3 code. This is used for map clicks
+	// because country display names can differ between data sources.
+	bool searchByAlpha3(
+		const string & alpha3,
+		CountryData & result,
+		string & errorMessage);
+
 	// Return the raw JSON response from the most recent API request.
 	// This is useful when checking or debugging API responses.
 	const string & getLastRawResponse() const;

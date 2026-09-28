@@ -35,115 +35,80 @@ void ofApp::setup() {
 void ofApp::updateLayout() {
 	const float w = (float)ofGetWidth();
 	const float h = (float)ofGetHeight();
+	const bool mobileLayout = w < 1100.0f;
+	const bool compactWindow = w < 1050.0f;
 
-	sidebarWidth = ofClamp(w * 0.16f, 210.0f, 250.0f);
-	topBarHeight = 110.0f;
-	outerMargin = ofClamp(w * 0.02f, 18.0f, 32.0f);
-	cardGap = ofClamp(w * 0.012f, 12.0f, 20.0f);
+	sidebarWidth = mobileLayout ? 0.0f
+		: (compactWindow ? ofClamp(w * 0.18f, 170.0f, 190.0f)
+			: ofClamp(w * 0.16f, 210.0f, 250.0f));
+	topBarHeight = mobileLayout ? 175.0f : 110.0f;
+	outerMargin = mobileLayout ? 12.0f : ofClamp(w * 0.02f, 14.0f, 32.0f);
+	cardGap = mobileLayout ? 10.0f : ofClamp(w * 0.012f, 10.0f, 20.0f);
 
-	contentBounds.set(
-		sidebarWidth + outerMargin,
-		topBarHeight + outerMargin,
-		std::max(300.0f, w - sidebarWidth - outerMargin * 2.0f),
+	contentBounds.set(sidebarWidth + outerMargin, topBarHeight + outerMargin,
+		std::max(260.0f, w - sidebarWidth - outerMargin * 2.0f),
 		std::max(300.0f, h - topBarHeight - outerMargin * 2.0f));
 
-	const float navX = 16.0f;
-	const float navW = sidebarWidth - 32.0f;
+	if (mobileLayout) {
+		const float navGap = 6.0f;
+		const float navW = (w - outerMargin * 2.0f - navGap * 3.0f) / 4.0f;
+		const float navY = 108.0f;
+		navExplore.set(outerMargin, navY, navW, 46);
+		navCompare.set(navExplore.getRight() + navGap, navY, navW, 46);
+		navFavorites.set(navCompare.getRight() + navGap, navY, navW, 46);
+		navInsights.set(navFavorites.getRight() + navGap, navY, navW, 46);
+	} else {
+		const float navX = 16.0f;
+		const float navW = sidebarWidth - 32.0f;
+		navExplore.set(navX, 150, navW, 52);
+		navCompare.set(navX, 212, navW, 52);
+		navFavorites.set(navX, 274, navW, 52);
+		navInsights.set(navX, 336, navW, 52);
+	}
 
-	navExplore.set(navX, 150, navW, 52);
-	navCompare.set(navX, 212, navW, 52);
-	navFavorites.set(navX, 274, navW, 52);
-	navInsights.set(navX, 336, navW, 52);
-
-	const float rightMargin = outerMargin;
-	const float buttonW = ofClamp(w * 0.095f, 115.0f, 145.0f);
-	const float searchGap = 14.0f;
-	const float searchW = ofClamp(w * 0.34f, 330.0f, 560.0f);
-
-	searchButton.set(
-		w - rightMargin - buttonW,
-		30,
-		buttonW,
-		54);
-
-	searchBox.set(
-		searchButton.x - searchGap - searchW,
-		30,
-		searchW,
-		54);
+	const float buttonW = mobileLayout ? 92.0f : ofClamp(w * 0.095f, 105.0f, 145.0f);
+	const float searchGap = mobileLayout ? 8.0f : (compactWindow ? 10.0f : 14.0f);
+	const float searchLeft = mobileLayout ? outerMargin : sidebarWidth + outerMargin;
+	const float searchW = std::max(120.0f, w - searchLeft - outerMargin - buttonW - searchGap);
+	searchBox.set(searchLeft, 30, searchW, 54);
+	searchButton.set(searchBox.getRight() + searchGap, 30, buttonW, 54);
 
 	const float contentX = contentBounds.x;
 	const float contentW = contentBounds.width;
+	const float heroY = topBarHeight + 30.0f;
+	const float heroH = mobileLayout ? 245.0f : 205.0f;
+	heroRect.set(contentX, heroY, contentW, heroH);
 
-	heroRect.set(
-		contentX,
-		140,
-		contentW,
-		205);
+	const float actionW = mobileLayout ? std::max(96.0f, (contentW - cardGap - 40.0f) * 0.5f)
+		: ofClamp(contentW * 0.13f, 112.0f, 140.0f);
+	if (mobileLayout) {
+		compareButton.set(heroRect.x + 20.0f, heroRect.getBottom() - 54.0f, actionW, 40.0f);
+		favoriteButton.set(compareButton.getRight() + cardGap, compareButton.y, actionW, 40.0f);
+	} else {
+		favoriteButton.set(heroRect.getRight() - actionW, heroRect.y + 150, actionW, 42);
+		compareButton.set(favoriteButton.x - cardGap - actionW, heroRect.y + 150, actionW, 42);
+	}
 
-	const float actionW = ofClamp(contentW * 0.13f, 112.0f, 140.0f);
-
-	favoriteButton.set(
-		heroRect.getRight() - actionW,
-		heroRect.y + 150,
-		actionW,
-		42);
-
-	compareButton.set(
-		favoriteButton.x - cardGap - actionW,
-		heroRect.y + 150,
-		actionW,
-		42);
-
-	const float lowerY = 510.0f;
+	const float metricTop = heroRect.getBottom() + 20.0f;
+	const float metricBlockH = mobileLayout ? 210.0f : 105.0f;
+	const float lowerY = metricTop + metricBlockH + 40.0f;
 	const float availableLowerW = contentW;
-
-	// Switch to a stacked map/details layout when horizontal space becomes limited.
-	const bool stacked = availableLowerW < 760.0f;
+	const bool stacked = mobileLayout || availableLowerW < 760.0f;
 
 	if (!stacked) {
-		const float detailsW = ofClamp(
-			availableLowerW * 0.31f,
-			300.0f,
-			390.0f);
-
+		const float detailsW = ofClamp(availableLowerW * 0.31f, 300.0f, 390.0f);
 		const float mapW = availableLowerW - detailsW - cardGap;
-
-		mapPanelRect.set(
-			contentX,
-			lowerY,
-			mapW,
-			std::max(240.0f, h - lowerY - 90.0f));
-
-		detailsRect.set(
-			mapPanelRect.getRight() + cardGap,
-			lowerY,
-			detailsW,
-			mapPanelRect.height);
+		mapPanelRect.set(contentX, lowerY, mapW, std::max(240.0f, h - lowerY - 90.0f));
+		detailsRect.set(mapPanelRect.getRight() + cardGap, lowerY, detailsW, mapPanelRect.height);
 	} else {
-		const float lowerH = std::max(220.0f, h - lowerY - 90.0f);
-
-		mapPanelRect.set(
-			contentX,
-			lowerY,
-			availableLowerW,
-			lowerH * 0.58f);
-
-		detailsRect.set(
-			contentX,
-			mapPanelRect.getBottom() + cardGap,
-			availableLowerW,
-			lowerH * 0.42f - cardGap);
+		const float mapH = mobileLayout ? 300.0f : std::max(220.0f, (h - lowerY - 40.0f) * 0.58f);
+		const float detailsH = mobileLayout ? 330.0f : std::max(180.0f, (h - lowerY - 40.0f) * 0.42f);
+		mapPanelRect.set(contentX, lowerY, availableLowerW, mapH);
+		detailsRect.set(contentX, mapPanelRect.getBottom() + cardGap, availableLowerW, detailsH);
 	}
 
 	mapBounds = mapPanelRect;
-
-	resetMapButton.set(
-		mapBounds.getRight() - 88,
-		mapBounds.y + 8,
-		76,
-		30);
-
+	resetMapButton.set(mapBounds.getRight() - 88, mapBounds.y + 8, 76, 30);
 	worldMap.setBounds(mapBounds);
 }
 
@@ -177,6 +142,8 @@ void ofApp::draw() {
 
 // Draw the permanent left navigation used to move between GlobeLens pages.
 void ofApp::drawSidebar() {
+	if (sidebarWidth <= 0.0f) return;
+
 	ofSetColor(19, 27, 39);
 	ofDrawRectangle(0, 0, sidebarWidth, ofGetHeight());
 
@@ -187,10 +154,17 @@ void ofApp::drawSidebar() {
 	headingFont.drawString("G", 35, 59);
 
 	ofSetColor(245, 248, 255);
-	logoFont.drawString("GlobeLens", 72, 59);
+	if (sidebarWidth < 200.0f) {
+		headingFont.drawString("GlobeLens", 66, 58);
+	} else {
+		logoFont.drawString("GlobeLens", 72, 59);
+	}
 
 	ofSetColor(100, 120, 145);
-	tinyFont.drawString("WORLD INTELLIGENCE", 73, 82);
+	tinyFont.drawString(
+		sidebarWidth < 200.0f ? "WORLD INTEL." : "WORLD INTELLIGENCE",
+		sidebarWidth < 200.0f ? 66 : 73,
+		82);
 
 	ofSetColor(40, 50, 66);
 	ofDrawRectangle(20, 110, sidebarWidth - 40, 1);
@@ -308,13 +282,33 @@ void ofApp::drawTopBar() {
 			+ (searchButton.width - textW) * 0.5f,
 		searchButton.y + 34);
 
+	if (sidebarWidth <= 0.0f) {
+		drawNavButton(navExplore, "Explore", PAGE_EXPLORE);
+		drawNavButton(navCompare, "Compare", PAGE_COMPARE);
+		drawNavButton(navFavorites, "Favorites", PAGE_FAVORITES);
+		drawNavButton(navInsights, "Insights", PAGE_INSIGHTS);
+	}
+
 	ofSetColor(
 		searchError
 			? ofColor(255, 110, 115)
 			: ofColor(115, 140, 170));
 
+	// Keep long feedback messages inside the available top-bar width.
+	string visibleStatus = statusMessage;
+	const float statusMaxW = ofGetWidth() - searchBox.x - outerMargin;
+
+	while (visibleStatus.size() > 4
+		&& smallFont.stringWidth(visibleStatus) > statusMaxW) {
+		visibleStatus.pop_back();
+	}
+
+	if (visibleStatus != statusMessage && visibleStatus.size() > 3) {
+		visibleStatus = visibleStatus.substr(0, visibleStatus.size() - 3) + "...";
+	}
+
 	smallFont.drawString(
-		statusMessage,
+		visibleStatus,
 		searchBox.x,
 		101);
 }
@@ -404,6 +398,41 @@ void ofApp::performSearch(const string & countryName) {
 
 	loadFlag(currentCountry);
 
+	currentPage = PAGE_EXPLORE;
+}
+
+// Load a country selected from the map using its ISO alpha-3 code.
+void ofApp::performMapSearch(const string & alpha3) {
+	if (searching || alpha3.empty()) return;
+
+	searching = true;
+	searchError = false;
+	statusMessage = "Loading country data...";
+
+	CountryData result;
+	string error;
+	bool ok = api.searchByAlpha3(alpha3, result, error);
+	searching = false;
+
+	if (!ok) {
+		searchError = true;
+		statusMessage = error;
+		return;
+	}
+
+	currentCountry = result;
+	searchText = currentCountry.commonName;
+	statusMessage = "Live data loaded for " + currentCountry.commonName + ".";
+
+	for (auto it = recentSearches.begin(); it != recentSearches.end();) {
+		if (ofToLower(*it) == ofToLower(currentCountry.commonName)) it = recentSearches.erase(it);
+		else ++it;
+	}
+	recentSearches.push_back(currentCountry.commonName);
+	while (recentSearches.size() > 6) recentSearches.erase(recentSearches.begin());
+
+	worldMap.focusCountry(currentCountry.alpha3);
+	loadFlag(currentCountry);
 	currentPage = PAGE_EXPLORE;
 }
 
@@ -514,24 +543,26 @@ void ofApp::loadFlag(const CountryData & country) {
 void ofApp::drawExplore() {
 	if (!currentCountry.valid) {
 		ofSetColor(245, 248, 255);
+		const float introY = topBarHeight + 60.0f;
 		titleFont.drawString(
 			"Explore the world",
 			contentBounds.x,
-			170);
+			introY);
 
 		ofSetColor(135, 150, 172);
 		bodyFont.drawString(
 			"Search above or click a country directly on the interactive map.",
 			contentBounds.x,
-			207);
+			introY + 37);
 
+		const float initialMapY = introY + 85.0f;
 		mapBounds.set(
 			contentBounds.x,
-			255,
+			initialMapY,
 			contentBounds.width,
 			std::max(
-				300.0f,
-				ofGetHeight() - 255.0f - 90.0f));
+				260.0f,
+				ofGetHeight() - initialMapY - 40.0f));
 
 		worldMap.setBounds(mapBounds);
 
@@ -604,8 +635,9 @@ void ofApp::drawCountryHero() {
 		4);
 
 	float textX = x + 35;
+	const bool narrowHero = ofGetWidth() < 700.0f;
 
-	if (flagLoaded) {
+	if (flagLoaded && !narrowHero) {
 		float fw = 92;
 		float fh = 58;
 
@@ -715,53 +747,28 @@ void ofApp::drawCountryHero() {
 
 // Display the four headline statistics for the selected country.
 void ofApp::drawMetricCards() {
-	const float y = 365.0f;
-	const float h = 105.0f;
+	const bool mobileLayout = ofGetWidth() < 1100;
+	const float y = heroRect.getBottom() + 20.0f;
 	const float totalW = contentBounds.width;
-
-	const int count = 4;
-	const float w = (totalW - cardGap * (count - 1))
-		/ (float)count;
-
+	const float h = mobileLayout ? 100.0f : 105.0f;
+	const int columns = mobileLayout ? 2 : 4;
+	const float w = (totalW - cardGap * (columns - 1)) / (float)columns;
 	const float x = contentBounds.x;
 
-	drawMetricCard(
-		x,
-		y,
-		w,
-		h,
-		"POPULATION",
-		formatNumber(
-			currentCountry.population));
+	const string labels[4] = { "POPULATION", "AREA", "CURRENCY", "DENSITY" };
+	const string values[4] = {
+		formatNumber(currentCountry.population),
+		formatNumber((long long)currentCountry.areaKm2) + " km2",
+		currentCountry.currencyCode,
+		formatDouble(currentCountry.populationDensity(), 1) + " / km2"
+	};
 
-	drawMetricCard(
-		x + (w + cardGap),
-		y,
-		w,
-		h,
-		"AREA",
-		formatNumber(
-			(long long)currentCountry.areaKm2)
-			+ " km2");
-
-	drawMetricCard(
-		x + (w + cardGap) * 2,
-		y,
-		w,
-		h,
-		"CURRENCY",
-		currentCountry.currencyCode);
-
-	drawMetricCard(
-		x + (w + cardGap) * 3,
-		y,
-		w,
-		h,
-		"DENSITY",
-		formatDouble(
-			currentCountry.populationDensity(),
-			1)
-			+ " / km2");
+	for (int i = 0; i < 4; ++i) {
+		const int col = i % columns;
+		const int row = i / columns;
+		drawMetricCard(x + col * (w + cardGap), y + row * (h + cardGap),
+			w, h, labels[i], values[i]);
+	}
 }
 
 // Draw a reusable statistic card and shorten values that are too wide to fit.
@@ -897,7 +904,18 @@ void ofApp::drawRecentSearches() {
 
 	if (recentSearches.empty()) return;
 
+	const bool mobileLayout = ofGetWidth() < 1100.0f;
+
+	// On narrow windows the map and details are stacked vertically.
+	// Do not pin recent searches to the bottom of the window because that
+	// can place the chips over the map while the page extends below view.
+	// Instead, show them only when there is clear space after Country Details.
 	float y = ofGetHeight() - 34.0f;
+	if (mobileLayout && currentCountry.valid) {
+		const float proposedY = detailsRect.getBottom() + 42.0f;
+		if (proposedY > ofGetHeight() - 18.0f) return;
+		y = proposedY;
+	}
 
 	ofSetColor(115, 135, 160);
 
@@ -1042,21 +1060,23 @@ void ofApp::drawCompareCountryCard(
 void ofApp::drawCompare() {
 	ofSetColor(245, 248, 255);
 
+	const bool mobileLayout = ofGetWidth() < 760;
+	const float pageTitleY = topBarHeight + 60.0f;
 	titleFont.drawString(
 		"Compare Countries",
 		contentBounds.x,
-		170);
+		pageTitleY);
 
 	ofSetColor(135, 150, 172);
 
 	bodyFont.drawString(
 		"Add two different countries using the Compare button on Explore.",
 		contentBounds.x,
-		207);
+		pageTitleY + 37);
 
 	clearCompareButton.set(
 		contentBounds.getRight() - 125,
-		157,
+		pageTitleY - 28,
 		125,
 		38);
 
@@ -1081,29 +1101,21 @@ void ofApp::drawCompare() {
 		clearCompareButton.y + 25);
 
 	const float x = contentBounds.x;
-	const float y = 255.0f;
+	const float y = pageTitleY + 85.0f;
 	const float totalW = contentBounds.width;
-	const float cardW = (totalW - cardGap) * 0.5f;
+	const float cardW = mobileLayout ? totalW : (totalW - cardGap) * 0.5f;
 
-	drawCompareCountryCard(
-		compareA,
-		x,
-		y,
-		cardW,
-		"COUNTRY A");
-
-	drawCompareCountryCard(
-		compareB,
-		x + cardW + cardGap,
-		y,
-		cardW,
-		"COUNTRY B");
+	drawCompareCountryCard(compareA, x, y, cardW, "COUNTRY A");
+	drawCompareCountryCard(compareB,
+		mobileLayout ? x : x + cardW + cardGap,
+		mobileLayout ? y + 430.0f : y,
+		cardW, "COUNTRY B");
 
 	if (
 		compareA.valid && compareB.valid) {
-		float insightY = std::min(
-			ofGetHeight() - 145.0f,
-			y + 455.0f);
+		float insightY = mobileLayout
+			? y + 860.0f
+			: std::min(ofGetHeight() - 145.0f, y + 455.0f);
 
 		ofSetColor(23, 31, 44);
 
@@ -1179,17 +1191,18 @@ void ofApp::drawFavorites() {
 
 	ofSetColor(245, 248, 255);
 
+	const float pageTitleY = topBarHeight + 60.0f;
 	titleFont.drawString(
 		"Saved Countries",
 		contentBounds.x,
-		170);
+		pageTitleY);
 
 	ofSetColor(135, 150, 172);
 
 	bodyFont.drawString(
 		"Favorites are saved locally. Open a card or remove it from your collection.",
 		contentBounds.x,
-		207);
+		pageTitleY + 37);
 
 	const auto & items = favorites.getAll();
 
@@ -1198,7 +1211,7 @@ void ofApp::drawFavorites() {
 
 		ofDrawRectRounded(
 			contentBounds.x,
-			255,
+			pageTitleY + 85.0f,
 			contentBounds.width,
 			220,
 			16);
@@ -1240,7 +1253,7 @@ void ofApp::drawFavorites() {
 		float x = contentBounds.x
 			+ col * (cardW + gapX);
 
-		float y = 255
+		float y = pageTitleY + 85.0f
 			+ row * (cardH + gapY);
 
 		ofRectangle card(
@@ -1325,27 +1338,28 @@ void ofApp::drawFavorites() {
 void ofApp::drawInsights() {
 	ofSetColor(245, 248, 255);
 
+	const float pageTitleY = topBarHeight + 60.0f;
 	titleFont.drawString(
 		"Insights",
 		contentBounds.x,
-		170);
+		pageTitleY);
 
 	ofSetColor(135, 150, 172);
 
 	bodyFont.drawString(
 		"Compare population or population density across your saved countries.",
 		contentBounds.x,
-		207);
+		pageTitleY + 37);
 
 	insightPopulationButton.set(
 		contentBounds.getRight() - 250,
-		158,
+		pageTitleY - 27,
 		112,
 		36);
 
 	insightDensityButton.set(
 		contentBounds.getRight() - 126,
-		158,
+		pageTitleY - 27,
 		126,
 		36);
 
@@ -1801,17 +1815,19 @@ void ofApp::mousePressed(
 
 	if (
 		currentPage == PAGE_EXPLORE && isInsideMap(x, y)) {
-		string clickedCountry = worldMap.countryAt(x, y);
+		// Refresh the hover result at the exact click position and prefer the
+		// ISO alpha-3 code. GeoJSON names can differ from API search names
+		// (for example "United States of America"), while codes are stable.
+		worldMap.update(x, y);
+		string clickedCode = worldMap.alpha3At(x, y);
 
 		worldMap.mousePressed(
 			x,
 			y,
 			button);
 
-		if (
-			button == OF_MOUSE_BUTTON_LEFT && !clickedCountry.empty()) {
-			performSearch(
-				clickedCountry);
+		if (button == OF_MOUSE_BUTTON_LEFT && !clickedCode.empty()) {
+			performMapSearch(clickedCode);
 		}
 
 		return;

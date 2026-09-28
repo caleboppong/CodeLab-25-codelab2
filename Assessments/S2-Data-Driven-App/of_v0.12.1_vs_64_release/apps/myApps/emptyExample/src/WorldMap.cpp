@@ -465,6 +465,30 @@ string WorldMap::countryAt(
 	return "";
 }
 
+// Return the ISO alpha-3 code for the country under a supplied mouse position.
+// Map clicks use this stable identifier instead of display names, which can
+// differ between the GeoJSON file and the REST Countries API.
+string WorldMap::alpha3At(
+	int mouseX,
+	int mouseY) const {
+
+	if (!loaded || !bounds.inside(mouseX, mouseY)) {
+		return "";
+	}
+
+	glm::vec2 point = screenToBase((float)mouseX, (float)mouseY);
+
+	for (const auto & country : countries) {
+		for (const auto & polygon : country.polygons) {
+			if (pointInPolygon(point, polygon.points)) {
+				return country.alpha3;
+			}
+		}
+	}
+
+	return "";
+}
+
 // Return the name of the country currently under the mouse.
 string WorldMap::hoveredName() const {
 	return hoverName;

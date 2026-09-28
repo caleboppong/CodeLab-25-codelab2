@@ -121,6 +121,7 @@ private:
 
 	// Search helpers.
 	void performSearch(const string & countryName);
+	void performMapSearch(const string & alpha3);
 	void loadFlag(const CountryData & country);
 	string trimSearchText(const string & text) const;
 	string resolveCountryAlias(const string & text) const;

@@ -41,6 +41,7 @@ public:
 
 	// Return information about the country underneath the mouse.
 	string countryAt(int mouseX, int mouseY) const;
+	string alpha3At(int mouseX, int mouseY) const;
 	string hoveredName() const;
 	string hoveredAlpha3() const;
 
