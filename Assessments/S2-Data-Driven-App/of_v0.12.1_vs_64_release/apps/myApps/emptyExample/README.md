@@ -34,7 +34,7 @@ The application uses separate C++ classes to organise different responsibilities
 ## Technologies
 
 - C++
-- openFrameworks
+- openFrameworks 0.12.1
 - REST Countries API
 - JSON
 - GeoJSON
@@ -42,23 +42,35 @@ The application uses separate C++ classes to organise different responsibilities
 
 ## API Configuration
 
-The API configuration file is intentionally excluded from this repository to protect the API key.
+GlobeLens requires an API key to retrieve live country information.
 
-Create:
+For security, the API configuration file is intentionally excluded from this repository.
+
+Create the following file:
 
 `bin/data/config/globelens.json`
 
-The configuration should contain the API credentials required by the application.
+Add the API key using this format:
+
+```json
+{
+  "apiKey": "YOUR_API_KEY_HERE"
+}
+```
+
+Replace `YOUR_API_KEY_HERE` with a valid API key.
 
 Do not commit API keys to the repository.
 
 ## Running the Application
 
-1. Install openFrameworks.
-2. Open `emptyExample.sln` in Visual Studio.
-3. Add the required API configuration locally.
-4. Build the project.
-5. Run the application.
+1. Download or clone this repository.
+2. Install openFrameworks 0.12.1 for Visual Studio.
+3. Open `emptyExample.sln` in Visual Studio.
+4. Create `bin/data/config/globelens.json`.
+5. Add a valid API key as described in the API Configuration section.
+6. Build the solution in Visual Studio.
+7. Run the application.
 
 ## Main Application Areas
 
@@ -72,7 +84,7 @@ Select two countries and compare population, land area and population density.
 
 ### Favorites
 
-Save countries for quick access. Saved countries are stored locally.
+Save countries for quick access. Saved countries are stored locally using JSON.
 
 ### Insights
 
